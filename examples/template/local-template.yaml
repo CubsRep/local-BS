@@ -1,0 +1,38 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: view-pending-drns
+  title: View Outstanding Drns
+  description: An example template for the scaffolder to view pending drns
+spec:
+  owner: user:guest
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Gather info
+      required: []
+      properties:
+        review:
+          type: object
+          properties: {}
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  steps:
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: getPendingDrn
+      name: Fetch Drns in non-approved state
+      action: debug:log
+      
+    - id: review
+      name: Display in tabular format
+      action: debug:log
+  
+  widgets:
+    - type: ReviewStep
+      step: review
+      props:
+        name: Pending DRN Requests
+        data: ${{ steps.getPendingDrn.output.documents }}

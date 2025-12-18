@@ -1,0 +1,8 @@
+# Backstage override configuration for your local development environment
+auth:
+  environment: development
+  providers:
+    guest:
+      users:
+        - name: Guest
+          email: guest@example.com

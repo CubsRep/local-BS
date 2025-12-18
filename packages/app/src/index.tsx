@@ -1,0 +1,8 @@
+import '@backstage/cli/asset-types';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import '@backstage/ui/css/styles.css';
+import dotenv from 'dotenv';
+dotenv.config({path:'../../.env'});
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
