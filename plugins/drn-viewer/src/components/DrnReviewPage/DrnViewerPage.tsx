@@ -19,6 +19,7 @@ import {
         TableHead,
         TableRow,
         Typography,
+        TableSortLabel
     
 } from '@material-ui/core';
 import { useLocation } from 'react-router-dom';
@@ -28,6 +29,14 @@ function useQueryParam(name: string) {
         const { search } = useLocation();
     return React.useMemo(() => new URLSearchParams(search).get(name), [search, name]);
 }
+
+type SortKey = 'drn' | 'created_at';
+type SortOrder = 'asc' | 'desc';
+
+const compare = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
+const parseDate = (s?: string) => (s ? new Date(s).getTime() : Number.NEGATIVE_INFINITY);
+
+
 
 export const DrnReviewPage = () => {
         const api = useApi(drnViewerApiRef);
@@ -50,6 +59,19 @@ export const DrnReviewPage = () => {
                 setLoading(false);
         }
     }, [api, includeApproved]);
+
+        const [sortKey, setSortKey] = React.useState<SortKey>('drn');
+        const [sortOrder, setSortOrder] = React.useState<SortOrder>('asc');
+        
+        const toggleSort = (key: SortKey) => {
+            if (sortKey === key) {
+                setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+            } else {
+                setSortKey(key);
+                setSortOrder('asc');
+            }
+        };
+
     React.useEffect(() => {
             load();
     
@@ -67,6 +89,23 @@ export const DrnReviewPage = () => {
                 setSubmitting(false);
         }
     };
+
+    const sortedRows = React.useMemo(() => {
+        const copy = [...rows];
+        copy.sort((a, b) => {
+            let result = 0;
+
+            if (sortKey === 'drn') {
+                result = compare(a.drn, b.drn);
+            } else if (sortKey === 'created_at') {
+                result = parseDate(a.created_at) - parseDate(b.created_at);
+            }
+            return sortOrder === 'asc' ? result : -result;
+        });
+        return copy;
+    }, [rows, sortKey, sortOrder]);
+
+
     return (
             <Page themeId="tool">
                 <Header title="DRN Review" subtitle="Select a DRN and approve/reject" />
@@ -106,16 +145,32 @@ export const DrnReviewPage = () => {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell width={48} />
-                                        <TableCell>DRN</TableCell>
+                                        <TableCell sortDirection={sortKey === 'drn' ? sortOrder : false}>
+                                            <TableSortLabel
+                                                active={sortKey === 'drn'}
+                                                direction={sortKey === 'drn' ? sortOrder : 'asc'}
+                                                onClick={() => toggleSort('drn')}
+                                            >
+                                                DRN
+                                            </TableSortLabel>
+                                        </TableCell>
                                         <TableCell>Business Unit</TableCell>
                                         <TableCell>Requester</TableCell>
                                         <TableCell>Architecture Review</TableCell>
                                         <TableCell>State</TableCell>
-                                        <TableCell>Created At</TableCell>
+                                        <TableCell sortDirection={sortKey === 'created_at' ? sortOrder : false}>
+                                            <TableSortLabel
+                                                active={sortKey === 'created_at'}
+                                                direction={sortKey === 'created_at' ? sortOrder : 'asc'}
+                                                onClick={() => toggleSort('created_at')}
+                                            >
+                                                Created At
+                                            </TableSortLabel>
+                                        </TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {rows.map(r => (
+                                    {sortedRows.map(r => (
                                         <TableRow key={r.drn} hover>
                                             <TableCell>
                                                 <Radio
