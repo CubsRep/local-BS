@@ -3,29 +3,19 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
-import { todoListServiceRef } from './services/TodoListService';
 
-/**
- * drnViewerPlugin backend plugin
- *
- * @public
- */
-export const drnViewerPlugin = createBackendPlugin({
+export const drnViewerBackendPlugin = createBackendPlugin({
   pluginId: 'drn-viewer',
   register(env) {
     env.registerInit({
       deps: {
         logger: coreServices.logger,
-        httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        todoList: todoListServiceRef,
       },
-      async init({ logger, httpAuth, httpRouter, todoList }) {
+      async init({ logger, httpRouter }) {
         httpRouter.use(
           await createRouter({
             logger,
-            httpAuth,
-            todoList,
           }),
         );
       },

@@ -119,3 +119,19 @@ kubernetes:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+
+# Google Cloud
+firestore:
+  projectId: ${GCP_PROJECT_ID}
+  databaseId: 'cloudgen2'
+  drn:
+    drn_status:
+      collection: 'drn_status'
+
+
+# Databricks
+databricks:
+  baseUrl: 'https://accounts.gcp.databricks.com'
+  clientId: ${DATABRICKS_CLIENT_ID}
+  clientSecret: ${DATABRICKS_CLIENT_SECRET}
+  accountId: ${DATABRICKS_ACCOUNT_ID}

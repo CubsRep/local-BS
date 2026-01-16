@@ -1,38 +1,60 @@
 apiVersion: scaffolder.backstage.io/v1beta3
-# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
 kind: Template
 metadata:
-  name: view-pending-drns
-  title: View Outstanding Drns
-  description: An example template for the scaffolder to view pending drns
+  name: drn-list-pending
+  title: List Pending DRNs
+  description: Fetches DRN documents with a custom action and renders the results in the UI.
 spec:
   owner: user:guest
-  type: service
+  type: run
 
-  # These parameters are used to generate the input form in the frontend, and are
-  # used to gather input data for the execution of the template.
+  # Optional form so the user can include "approved" docs too.
   parameters:
-    - title: Gather info
-      required: []
+    - title: Options
       properties:
-        review:
-          type: object
-          properties: {}
+        includeApproved:
+          title: Include approved DRNs as well
+          type: boolean
+          default: false
 
-  # These steps are executed in the scaffolder backend, using data that we gathered
   steps:
-    # Each step executes an action, in this case one templates files into the working directory.
-    - id: getPendingDrn
-      name: Fetch Drns in non-approved state
+    - id: fetch-drns
+      name: Fetch DRNs
+      action: drn:pending:list
+      input:
+        includeApproved: ${{ parameters.includeApproved }}
+
+    # A small log that is visible in the task log UI
+    - id: summary-log
+      name: Log summary
       action: debug:log
+      input:
+        message: >
+          Retrieved ${{ steps['fetch-drns'].output.documents | pick('length') }}
+          DRN document(s) (includeApproved=${{ parameters.includeApproved }})
+
+  # Everything here is shown on the Results page after the run completes.
+
+  # output:
+  #   text:
+  #     - title: DRN Table
+  #       content: |+
+
+  #           | DRN    | Business Unit | Requester               | Architecture Review | State | Created At  |
+  #           |--------|----------------|-------------------------|---------------------|----------|-------------|
+  #           | DRN001 | Finance        | john.doe@example.com    | Pending             | pending    | 2024-01-15  |
+  #           | DRN002 | Engineering    | jane.smith@example.com  | In Progress         | pending    | 2025-06-12  |
+  #           | DRN003 | Itsvc          | chris.w@example.com  | In Progress         | rejected   | 2024-08-12  |
+  #           | DRN004 | Cloud          | andy.q@example.com  | In Progress         | pending    | 2025-03-19  |
+  #           | DRN005 | Engineering    | mike.m@example.com  | completed           | approved   | 2025-11-11  |
+
+  output:
+    links:
+      - title: Open DRN Review UI
+        url: /drns/review?includeApproved=${{ parameters.includeApproved }}
       
-    - id: review
-      name: Display in tabular format
-      action: debug:log
-  
-  widgets:
-    - type: ReviewStep
-      step: review
-      props:
-        name: Pending DRN Requests
-        data: ${{ steps.getPendingDrn.output.documents }}
+      - text:
+        content: |
+          DRNs fetched successfully.
+          Opend **DRN Review UI** to select a DRN and approve/reject
+          

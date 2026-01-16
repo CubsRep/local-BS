@@ -1,115 +1,96 @@
-import { HttpAuthService,LoggerService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import Router from 'express-promise-router';
-import { todoListServiceRef } from './services/TodoListService';
+import { LoggerService } from '@backstage/backend-plugin-api';
+import { z } from 'zod';
 
-// Define the shape of your DRN data
-export type DRNStatus = 'pending' | 'approved' | 'rejected';
-
-export interface DRNEntry {
-  id: string;
-  requesterName: string;
-  projectId: string;
-  status: DRNStatus;
-  requestDate: string; // ISO string preferred
-  // ... any other metadata from your Firestore documents
-}
-
-export interface RouterOptions {
-  logger: LoggerService;
-}
-
-// In-memory mock data for local testing
-const MOCK_DRN_ENTRIES: DRNEntry[] = [
-  {
-    id: 'drn-001',
-    requesterName: 'Alice Johnson',
-    projectId: 'proj-123',
-    status: 'pending',
-    requestDate: '2025-10-10T12:00:00.000Z',
-  },
-  {
-    id: 'drn-002',
-    requesterName: 'Bob Smith',
-    projectId: 'proj-456',
-    status: 'approved',
-    requestDate: '2025-09-28T09:30:00.000Z',
-  },
-  {
-    id: 'drn-003',
-    requesterName: 'Carol Lee',
-    projectId: 'proj-789',
-    status: 'rejected',
-    requestDate: '2025-10-01T16:15:00.000Z',
-  },
-  {
-    id: 'drn-004',
-    requesterName: 'Carol Lee',
-    projectId: 'proj-999',
-    status: 'rejected',
-    requestDate: '2025-10-01T16:15:00.000Z',
-  },
-  {
-    id: 'drn-005',
-    requesterName: 'Vasa Lee',
-    projectId: 'proj-100',
-    status: 'pending',
-    requestDate: '2025-10-01T16:15:00.000Z',
-  },
-  {
-    id: 'drn-006',
-    requesterName: 'Mike Mo',
-    projectId: 'proj-223',
-    status: 'approved',
-    requestDate: '2025-10-01T16:15:00.000Z',
-  }
-];
-
-type RouterDeps = {
-  logger: LoggerService;
-  httpAuth: HttpAuthService;
-  todoList: typeof todoListServiceRef.T;
+type Drn = {
+  drn: string;
+  business_unit: string;
+  requester_email: string;
+  architecture_review: string;
+  approved: boolean;
+  state: 'pending' | 'rejected' | 'approved';
+  created_at?: string;
 };
 
-function isDrnStatus(value: unknown): value is DRNStatus {
-  return value === 'pending' || value === 'approved' || value === 'rejected';
-}
+const MOCK: Drn[] = [
+  {
+    drn: 'DRN001',
+    business_unit: 'Finance',
+    requester_email: 'john.doe@example.com',
+    architecture_review: 'Pending',
+    approved: false,
+    state: 'pending',
+    created_at: '2024-01-15',
+  },
+  {
+    drn: 'DRN002',
+    business_unit: 'Engineering',
+    requester_email: 'jane.smith@example.com',
+    architecture_review: 'completed',
+    approved: true,
+    state: 'approved',
+    created_at: '2025-06-12',
+  },
+  {
+    drn: 'DRN003',
+    business_unit: 'Itsvc',
+    requester_email: 'chris.w@example.com',
+    architecture_review: 'In Progress',
+    approved: false,
+    state: 'rejected',
+    created_at: '2024-08-12',
+  },
+  {
+    drn: 'DRN004',
+    business_unit: 'Cloud',
+    requester_email: 'andy.q@example.com',
+    architecture_review: 'In Progress',
+    approved: false,
+    state: 'pending',
+    created_at: '2025-03-19',
+  },
+  {
+    drn: 'DRN005',
+    business_unit: 'Engineering',
+    requester_email: 'mike.m@example.com',
+    architecture_review: 'completed',
+    approved: true,
+    state: 'approved',
+    created_at: '2025-11-11',
+  },
+];
 
-export async function createRouter(options: RouterDeps): Promise<express.Router> {
-    const { logger } = options;
-    const router = Router();
-    router.use(express.json());
+export async function createRouter({
+  logger,
+}: {
+  logger: LoggerService;
+}): Promise<express.Router> {
+  const router = Router();
+  router.use(express.json());
 
-    // GET /api/drn-viewer/DRN-list
-    router.get('/DRN-list', async (req, res) => {
-      logger.info('Received request for DRN list (mock).');
-  
-      try {
-        // Optional: filter by status via ?status=pending|approved|rejected
-        const { status } = req.query;
-        let data = MOCK_DRN_ENTRIES;
-  
-        if ( typeof status === 'string') {
-            if (!isDrnStatus(status)) {
-            throw new Error(`Invalid status value: ${status}`);
-          }
-            data = data.filter(d => d.status === status);
-        }
-  
-        // Optional: simulate network delay
-        // await new Promise(r => setTimeout(r, 250));
-  
-        res.json(data);
-      } catch (error: any) {
-        logger.error(`Failed to return mock DRN list: ${error?.message ?? error}`);
-        res.status(500).json({ error: 'Failed to retrieve mock DRN data' });
-      }
-    });
-  
-    // Basic health check
-    router.get('/health', (_req, res) => {
-      res.send({ status: 'ok' });
-    });
-  
-    return router;
+  // GET /api/drn-viewer/pending?includeApproved=true
+  router.get('/pending', async (req, res) => {
+    const includeApproved = req.query.includeApproved === 'true';
+    const documents = includeApproved ? MOCK : MOCK.filter(d => !d.approved);
+
+    res.json({ documents });
+  });
+
+  // POST /api/drn-viewer/decision  { drn: "DRN001", decision: "approve" | "reject" }
+  router.post('/decision', async (req, res) => {
+    const body = z
+      .object({
+        drn: z.string(),
+        decision: z.enum(['approve', 'reject']),
+      })
+      .parse(req.body);
+
+    logger.info(`DRN decision received: ${body.drn} => ${body.decision}`);
+
+    // TODO: Replace this with Firestore update / workflow trigger
+    res.json({ ok: true });
+  });
+
+  return router;
 }

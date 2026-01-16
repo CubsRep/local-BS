@@ -3,20 +3,20 @@ import {
   createRoutableExtension,
 } from '@backstage/core-plugin-api';
 
-import { rootRouteRef } from './routes';
+import { drnReviewRouteRef } from './routes';
 
 export const drnViewerPlugin = createPlugin({
   id: 'drn-viewer',
   routes: {
-    root: rootRouteRef,
+    root: drnReviewRouteRef,
   },
 });
 
-export const DrnViewerPage = drnViewerPlugin.provide(
+export const DrnReviewPageExtension = drnViewerPlugin.provide(
   createRoutableExtension({
     name: 'DrnViewerPage',
     component: () =>
-      import('./components/DrnViewerPage').then(m => m.DrnViewerPage),
-    mountPoint: rootRouteRef,
+      import('./components/DrnReviewPage/DrnViewerPage').then(m => m.DrnReviewPage),
+    mountPoint: drnReviewRouteRef,
   }),
 );

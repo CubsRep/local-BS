@@ -1,2 +1,2 @@
-export { drnViewerPlugin } from './plugin';
-export { drnViewerPlugin as default } from './plugin';
+
+export { drnViewerBackendPlugin as default } from './plugin'
