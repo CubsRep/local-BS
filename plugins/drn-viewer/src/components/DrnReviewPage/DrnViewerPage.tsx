@@ -36,15 +36,13 @@ type SortOrder = 'asc' | 'desc';
 const compare = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
 const parseDate = (s?: string) => (s ? new Date(s).getTime() : Number.NEGATIVE_INFINITY);
 
-
-
 export const DrnReviewPage = () => {
         const api = useApi(drnViewerApiRef);
         const includeApproved = useQueryParam('includeApproved') === 'true';
         const [rows, setRows] = React.useState<Drn[]>([]);
         const [loading, setLoading] = React.useState(true);
         const [selected, setSelected] = React.useState<string | null>(null);
-        const [submitting, setSubmitting] = React.useState(false);
+        const [submitting] = React.useState(false);
         const [error, setError] = React.useState<string | null>(null);
         const load = React.useCallback(async () => {
             setLoading(true);
@@ -62,7 +60,6 @@ export const DrnReviewPage = () => {
 
         const [sortKey, setSortKey] = React.useState<SortKey>('drn');
         const [sortOrder, setSortOrder] = React.useState<SortOrder>('asc');
-        
         const toggleSort = (key: SortKey) => {
             if (sortKey === key) {
                 setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -76,19 +73,31 @@ export const DrnReviewPage = () => {
             load();
     
     }, [load]);
-    const submit = async (decision: 'approve' | 'reject') => {
-            if (!selected) return;
-            setSubmitting(true);
-            setError(null);
-            try {
-                await api.decide(selected, decision);
-                await load();
-        } catch (e: any) {
-                setError(e?.message ?? 'Failed to submit decision');
-        } finally {
-                setSubmitting(false);
-        }
-    };
+
+    // const submit = async (decision: 'approve' | 'reject') => {
+    //         if (!selected) return;
+    //         setSubmitting(true);
+    //         setError(null);
+    //         try {
+    //             await api.decide(selected, decision);
+    //             await load();
+    //     } catch (e: any) {
+    //             setError(e?.message ?? 'Failed to submit decision');
+    //     } finally {
+    //             setSubmitting(false);
+    //     }
+    // };
+
+    const openDecisionTemplate = (drn:string, choice: 'approve' | 'reject') => {
+        // Backstage scaffolder supports prefill via `formData` query param
+        const formData = encodeURIComponent(JSON.stringify({ drn, choice }));
+
+        // Route pattern: /create/templates/<namespace>/<templateName>
+        // Most setups use the "default" namespace && templateName = metadata.name
+        const url = `/create/templates/default/drn-decision?formData=${formData}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };  
+    
 
     const sortedRows = React.useMemo(() => {
         const copy = [...rows];
@@ -116,7 +125,7 @@ export const DrnReviewPage = () => {
                                 variant="contained"
                                 color="primary"
                                 disabled={!selected || submitting}
-                                onClick={() => submit('approve')}
+                                onClick={() => openDecisionTemplate(selected!, 'approve')}
                         >
                             Approve
                         </Button>
@@ -124,7 +133,7 @@ export const DrnReviewPage = () => {
                             variant="outlined"
                             color="secondary"
                             disabled={!selected || submitting}
-                            onClick={() => submit('reject')}
+                            onClick={() => openDecisionTemplate(selected!, 'approve')}
                         >
                             Reject
                         </Button>

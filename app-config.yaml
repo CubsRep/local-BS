@@ -95,6 +95,11 @@ catalog:
       target: ../../examples/template/local-template.yaml
       rules:
         - allow: [Template]
+    
+    - type: file
+      target: ../../examples/template/drn-decision-template.yaml
+      rules:
+        - allow: [Template]    
 
     # Local example organizational data
     - type: file

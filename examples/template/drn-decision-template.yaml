@@ -1,0 +1,41 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: drn-decision
+  title: DRN Decision (Approve/Reject)
+  description: Local test template opened from the DRN Review table.
+  
+spec:
+  owner: user:guest
+  type: run
+  parameters:
+    - title: Decision
+      required:
+        - drn
+        - choice
+      properties:
+        drn:
+          title: DRN
+          type: string
+          description: DRN identifier (e.g., DRN001)
+        choice:
+          title: Choice
+          type: string
+          enum:
+            - approve
+            - reject
+          ui:widget: radio
+  steps:
+    - id: log
+      name: Log decision
+      action: debug:log
+      input:
+        message: >
+          Decision received: DRN=${{ parameters.drn }}, choice=${{ parameters.choice }}
+  output:
+    text:
+      - title: Result
+        content: |
+          ✅ Decision captured (local test)
+          - DRN: `${{ parameters.drn }}`
+          - Choice: `${{ parameters.choice }}`
