@@ -18437,13 +18437,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:^17.2.3":
-  version: 17.2.3
-  resolution: "dotenv@npm:17.2.3"
-  checksum: 10c0/c884403209f713214a1b64d4d1defa4934c2aa5b0002f5a670ae298a51e3c3ad3ba79dfee2f8df49f01ae74290fcd9acdb1ab1d09c7bfb42b539036108bb2ba0
-  languageName: node
-  linkType: hard
-
 "drange@npm:^1.0.2":
   version: 1.1.1
   resolution: "drange@npm:1.1.1"
@@ -29829,7 +29822,6 @@ __metadata:
     "@backstage/e2e-test-utils": "npm:^0.1.1"
     "@google-cloud/firestore": "npm:^8.0.0"
     "@playwright/test": "npm:^1.32.3"
-    dotenv: "npm:^17.2.3"
     node-gyp: "npm:^10.0.0"
     prettier: "npm:^2.3.2"
     ts-node: "npm:^10.9.2"
