@@ -11,8 +11,7 @@ import {
   discoveryApiRef,
 } from '@backstage/core-plugin-api';
 
-import { drnViewerApiRef } from '@internal/plugin-drn-viewer';
-import { DrnViewerClient } from '@internal/plugin-drn-viewer/src/api/DrnViewerClient';
+import { drnViewerApiRef, DrnViewerClient } from '@internal/plugin-drn-viewer';
 
 export const apis: AnyApiFactory[] = [
   // 1) SCM integrations from app-config.yaml
