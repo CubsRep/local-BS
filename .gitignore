@@ -36,3 +36,23 @@ yarn-error.log*
 .yarn
 yarn.lock
 .yarnrc.yml
+
+# Backstage
+backstage.json.lock
+dist-types/
+.backstage/
+packages/*/dist/
+plugins/*/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Runtime
+*.log
+*.pid
+*.seed
