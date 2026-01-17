@@ -12,8 +12,8 @@ build/
 *.swo
 
 # Environment
-/.env
-/.envrc
+.env
+.envrc
 docker/.env
 docker/local.env
 .env.*
