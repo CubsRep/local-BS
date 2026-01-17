@@ -33,4 +33,6 @@ yarn-error.log*
 .terraform.lock.hcl
 
 # yarn
-.yarnlock
+.yarn
+yarn.lock
+.yarnrc.yml
