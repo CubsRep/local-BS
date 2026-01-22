@@ -1,13 +1,13 @@
 import {
-  coreServices,
-  createBackendPlugin,
+	coreServices,
+	createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
-import { DatabricksClient } from './services/DatabricksClient';
+import { createRouter } from './services/router';
+import { DatabricksClient } from './services/DatabricksApiClient';
 
 /**
  * databricksPlugin backend plugin
- *
+ * 
  * @public
  */
 export const databricksPlugin = createBackendPlugin({
@@ -34,3 +34,4 @@ export const databricksPlugin = createBackendPlugin({
     });
   },
 });
+ 
